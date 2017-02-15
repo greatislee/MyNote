@@ -1,0 +1,202 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2017-01-08T19:40:12+08:00
+
+====== 项目一 ：安全传输平台 ======
+Created 星期日 08 一月 2017
+
+==== 框架图: ====
+
+
+{{file:///media/lee/IT/itcast/%E9%A1%B9%E7%9B%AE%E4%B8%80/01%20-%20%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E5%B9%B3%E5%8F%B0%E9%A1%B9%E7%9B%AE%EF%BC%88%E7%AE%80%E4%BB%8B-%E9%9C%80%E6%B1%82-%E6%96%B9%E6%A1%88-%E6%BC%94%E7%A4%BA-%E9%83%A8%E7%BD%B2%EF%BC%89/1-%E6%95%99%E5%AD%A6%E8%B5%84%E6%96%99/%E5%AE%89%E5%85%A8%E4%BC%A0%E8%BE%93%E5%B9%B3%E5%8F%B0%E6%9E%B6%E6%9E%84.png}}
+
+
+个人概述:数据传输主要是为了解决集团内部信息数据的传输安全,消息安全,身份鉴别和认证.
+技术概况:我目前觉得是函数接口的设计,和业务逻辑的锻炼.还有一些makefile,动态库,数据库操作联系
+主要是要锻炼自己的业务逻辑!!!!!
+
+=== 方案的原理 ===
+
+{{./pasted_image001.png}}
+
+
+1.第三方应用app，通过外联接口加密、解密数据。2.外联接口通过共享内存查找网点密钥。3.密钥协商服务器和密钥协商客户端协商密钥，写共享内存。密钥协商客户端可以是linux平台应用4.程序、也可以是win平台应用程序。5.密钥协商服务器配置终端（SecMngAdmin）管理接入的网点应用，完成网点生命周期管理；密钥6.协商服务器配置终端（SecMngAdmin）可以进行历史密钥管理、审计管理等等。每一个网点都进行编号。
+
+==== 项目分解: ====
+四大基础组件：
+
+		统一通讯组件：  libitcastsocket.so    poolsocket.h
+
+		统一数据库访问组件： libicdbapi.so   icdbapi.h  
+
+		统一报文编解码组件： 解决平台之间的差异。  xml、json、自定义、BER
+
+					 libmessagereal.so   keymng_msg.h： MsgKey_Req 密钥请求结构体； MsgKey_Res 密钥应答结构体；  .dll .lib
+
+		统一共享内存组件： myipc_shm.h    myipc_shm.c
+
+
+=== 指针做函数参数的用法: ===
+	1. 一级指针:地址传递,提高效率.
+	2. 二级指针: 就是做函数的参数,区别在于是传入参数还是传出参数.一切遵从__谁malloc谁free的遵旨__!!!
+    
+__面向过程编程  C__
+__简介赋值成立的三个条件__
+__1.定义一个实参 一个形参 2. 建立关联 实参取地址给形参 3 *p = 10;__
+
+=== 提高 ===
+	__C两个模型 1 内存四区模型 函数调用模型 2 指针做函数参数 3 函数指针做函数参数__
+
+
+==== 封装(突破了函数的概念) ====
+
+==== 继承(软件行业的追求目标   代码复用!!!) ====
+
+==== 多态( ====
+__
+
+==== 多态是一把利器!是一种语法现象!!! ====
+__
+
+==== ) 可扩展! ====
+
+__1.C++编译器 提前布局!  看到虚函数就创建 vptr指针 虚函数表__
+__2.发生多态的时候 base--->vptr--->虚函数表 (函数的入口地址)__
+__3.函数指针做函数参数(回调函数!)  __
+其实C++的多态就是基于C语言的回调函数! 就是一种语法现象!!!
+
+	多态概念:同样一个api函数可以表现出不同的形态(可以调用父类的api函数 也可以调用用子类的api函数)
+	多态发生的三个条件
+	1.有继承
+	2.虚函数重写
+	3.父类指针或者父类引用 指向子类对象
+	__class Myparent__
+	__{__
+		__public:__
+			__virtual void print()=0;__
+		__protected:__
+		__private:__
+	__};__
+	
+	__class Child:public Myparent__
+	__{__
+		__public:__
+			__virtual void print()__
+			__{__
+				__printf("我是儿子...\n");__
+			__}__
+		__protected:__
+		__private:__
+	__};__
+	__class sb:public Myparent__
+	__{__
+		__public:__
+		__virtual void print()__
+		__{__
+			__public:__
+				__virtual void print()__
+				__{__
+					__cout<<"我是sb"<<endl;__
+				__}__
+		__}__
+	__};__
+	
+
+
+=== 搭建多态舞台 ===
+	看C++代码和C语言不一样! 要看出来作者的设计理念 为什么这个要用多态!!!
+	 void HowToPrint(__MyParent *base__)--->这个类增加了函数指针做函数参数 可以传更多的东西!!!
+	 {
+			base->print();//发生多态!!!!!!
+	 }
+	
+	void main()
+	{
+		Myprent p1;
+		Mychild p2;
+		
+		//发生多态
+	 HowToPrint(&p1);
+	}
+	
+
+
+=== 动态库基本常识 ===
+	1.win环境下，动态库—— xxx.dll  xxx.lib  xxx.h
+	2.动态库不是exe 是系列函数的集合
+Windows动态库的制作：
+	1.命名的话最好不要是中文
+	2.创建时选择.dll生成项目,不要运行
+	3.动态库API函数的 导出。只将用户使用的指定某几个函数从动态库中导出。
+	使用宏__(__declspec(dllexport))__，提示编译器。在编译程序的时候，需特殊处理的函数。
+	注意： .c 文件 和 .h 文件 均需要添加该宏！！ （VS2013 要求）
+	默认生成的动态库位于上层目录下的 Debug 目录内。
+动态库制作结果：
+			xxxxx.dll	二进制目标函数集，可被操作系统加
+			xxxxx.lib	是对dll的描述文件 （包含多少函数，哪些被导出。。。。）
+			xxx.h 以及以上2个文件 即可为exe执行提供支持。 但提供给用户时， .h中的 __declspec(dllexport) 宏应删除。
+
+	动态库调用和调试：
+				通知VS2013编译器，使用提供的动态库。
+				将.dll .lib .h三个文件放置在 .c同级目录下。
+				右键项目“属性”---“配置属性”---“链接器”---“输入”--- “附加依赖项”---下拉菜单“编辑”
+				----输入【描述dll信息lib文件  xxxxx.lib】
+					常见错误：
+	
+	1. 若xxx.lib配置错误，则VS编译器无法找到所用函数。
+	
+	2. 如若在运行111.exe时，说明操作系统找不到动态库加载路径。
+	
+	1. 配置PATH  2. 将exe和动态库dll置于同一目录下即可。
+	
+		VS2015：
+	
+		xxxx.lib  ---> .c 源码所在目录位置
+	
+		xxxx.dll ---> .exe 可执行文件所在目录位置。
+	
+	动态库内存释放：
+	
+		遵循一个原则：谁分配，谁释放。
+	
+				  调用动态库函数分配的内存，也一定要调用动态库函数来释放内存。
+
+
+==== ——————————Linux动态库制作 ====
+gcc  -c	itcast_asn1_der.c  -o itcast_asn1_der.o  -fPIC  (生成与位置无关的代码)       ./a.out  运行之后  加载。  延迟载入。
+			ar 制作静态库。
+		gcc -shared  -o lib库名.so  itcast_asn1_der.o itcastderlokeymng_msg.o  ---->   lib库名.so
+		gcc -shared  -o lib库名.so  itcast_asn1_der.o itcastderlog.o keymng_msg.o  ---->   lib库名.so
+
+gcc test.c -o a.out -L 指定库所在路径 -l 指定库名 （去掉lib， 去掉.so） -I 指定库所对应的头文件所在目录   ---> a.out
+
+	链接器：	工作于连接生成可执行文件阶段。 gcc 第 4 步。	任务：数据段合并 和 地址回填（数据地址重定位）
+
+				用 -L  -l  -I 参数。
+	动态链接器：	工作于 加载器加载可执行文件到内存后，程序运行时查找库函数期间。   加载库函数到内存，重定位函数地址。（绝对地址）
+
+用 LD_LIBRARY_PATH 。
+运行 ： ./a.out   ----》  报错！  --》  原因：  动态连接器，找不到加载动态库的目录位置。    ldd  a.out    找不到：  ===> not found
+
+		错误提示：./a.out: error while loading shared libraries: libmymessagereal.so: cannot open shared object file: No such file or directory
+			-l、-L 给 “连接器” 指定动态库所在位置。
+
+	解决： 	1. 将自定义的动态库 cp 放到 标准C库所在目录位置；（不推荐）
+
+	2. 在可执行文件所在目录位置 执行命令： export LD_LIBRARY_PATH = 库路径; （临时生效）
+
+	3. 帮助动态连接器 指定加载 动态库目录位置。 export LD_LIBRARY_PATH = 库路径; 写入 ~/.bash_profile 中
+
+
+	ldd a.out 成功显示动态库位置。    ./a.out 运行。
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,142 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2017-02-10T17:26:06+08:00
+
+====== Linux Socket ======
+Created 星期五 10 二月 2017
+
+=== 网络字节序（是大端字节序） ===
+	1.大端字节序 最高有效位存储于最低内存地质处，最低有效位存储于最高内存地质处
+	2.小端字节序 高->高  低->低
+	3.主机字节序 x86为小端 Motorola 6800 为大端 ARM字节序可配置
+	
+	=== 字节序转换函数 ===
+	
+	uint32_t htonl(uint32_t hostlong);
+	uint16_t htons(uint16_t hostshort);
+	uint32_t ntohl(uint32_t netlong);
+	uint16_t ntohs(uint16_t netshort);
+	说明：在上述的函数中，h代表host；n代表network s代表short；l代表long
+	
+	=== 地址转换函数 ===
+	
+	#include <netinet/in.h>
+	#include <arpa/inet.h>
+	int inet_aton(const char *cp, struct in_addr *inp);
+	in_addr_t inet_addr(const char *cp);
+	char *inet_ntoa(struct in_addr in);
+
+
+=== 套接字类型 ===
+	1.流式套接字（SOCK_STREAM）
+	提供面向链接的，可靠的数据传输服务，数据无差错，无重复的发送，且按发送顺序接受
+	2.数据报式套接字（SOCK_DGRAM）
+	提供无连接服务。不提供无错保证，数据可能丢失或重复，并且接收顺序混乱。
+	3.原始套接字（SOCK_RAW）
+	
+	
+	
+	{{./pasted_image.png}}
+	
+**accept 函数**
+	功能：从已完成链接队列返回第一个链接，如果已完成链接队列为空，则阻塞
+	原型： int accept(int scofd,struct sockaddr* addr,socklen_t* addrlen)
+	参数：
+		1.sockfd：服务器套接字
+		2.addr：将返回等待方的套接字地址
+		3.addrlen：返回等待方套接字地址的长度
+	返回值：
+		成功返回非负整数，失败返回-1；
+
+
+=== TCP面向连接的安全的连接  会丢数据 但是会重新传（基于流 SOCK_stream） ===
+
+SYN：就是客户端要建立连接请求
+ACK:确认信号
+
+=== 三次握手 ===
+client要与server建立连接需要三次握手 
+	1.client说 咱们做个朋友（SYN）
+	2.server说 好（SYN ACK）
+	3.client说 那咱们就是好朋友了（ACK）
+**第一次握手**：
+	client给server发一个标志位SYN 随机产生一个32位序号
+**第二次握手**：
+	server收到了client发送的连接请求
+	判断SYN标志位是否位1
+	server回复：给client发送ACK携带确认序号（clinet SYN对应的序号+1）
+	给client发送连接请求：SYN并携带一个随机32位序号
+**第三次握手：**
+	判断ACK是否为1
+	判断确认序号是否==发过去的序号+1
+	判断SYN是否为1
+	给server回复一个ACK携带确认序号（server的SYN对应的序号+1）
+
+
+=== 四次挥手 ===
+
+	FIN 对应的标号：
+		对方最后一次确认的包ACK对应的编号
+		
+**第一次挥手：**
+	client 发送FIN标志位 发一个上一次server发送的序号
+**第二次挥手**
+	server 发送ACK标志位
+**第三次挥手**
+	server 发送FIN
+**第四次挥手**
+	client 发送ACK
+
+
+=== Socket API 与TCP/IP的11中状态 ===
+
+{{./pasted_image001.png}}
+
+client发送了SYN或者调用了connect（）就会变成SYN_SENT 然后变成 ESTABLISHED（准备好了要通信了）
+
+LISTEN 收到了SYN（listen）就会变成SYN_RCVD
+
+主动关闭要发送FIN(close())的状态会变为 FIN_WAIT_1-->FIN_WAIT_2
+ 
+CLOSE_WAIT 半关闭  A给B主动发送了FIN，但是B没有给A发送FIN
+
+只有主动断开连接的一方才会有TIME_WAIT（等待）
+
+
+**半关闭**
+ A给B主动发送了FIN，但是B没有给A发送FIN
+ A关闭了与B的连接，但是B还处于与A的连接状态
+ 
+特点：
+	A可以接受B发送过来的数据
+	A不能给B发送数据了
+
+2MSL（在主动关闭连接一方，处于TIME_WAIT状态）
+等待时长：有的地方2分钟，有的是30s 一般是30s（MSL）
+
+=== 滑动窗口 ===
+	就是一个缓冲区（记录大小）
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+

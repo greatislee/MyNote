@@ -1,0 +1,11 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2017-01-20T09:34:07+08:00
+
+====== Linux-oracle数据库开启服务 ======
+Created 星期五 20 一月 2017
+
+1.切换为oracle(sqlplus / as sysdba)  (直接调到第3步)   /*------sqlplus [[/nolog*/]]
+2.connect / as sysdba
+3.startup
+4.exit ----lsnrctl start

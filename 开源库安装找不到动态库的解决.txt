@@ -1,0 +1,29 @@
+Content-Type: text/x-zim-wiki
+Wiki-Format: zim 0.4
+Creation-Date: 2017-02-05T14:44:41+08:00
+
+====== 开源库安装找不到动态库的解决 ======
+Created 星期日 05 二月 2017
+
+方法一： 
+
+find  /usr   -name  libfastcommon.so
+
+  修改环境变量
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64/
+
+
+方法二：
+sudo vim /etc/ld.so.conf
+
+将so所在的路径 放在ld.so.conf中
+
+sudo  ldconfig -v  更新配置文件
+
+
+方法三：
+系统会默认去  /usr/lib 去找so动态库
+
+只需要再/usr/lib/下创建一个软连接  指向 so的真实绝对路径
+ln -s	[[/usr/lib64/libfastcommon.so]]  [[/usr/lib/libfastcommon.so]]
+sudo ldconfig -v  (或者重新打开一个终端)
